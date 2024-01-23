@@ -258,7 +258,7 @@ export function getZodSchema({ schema, ctx, meta: inheritedMeta, options }: Conv
                 } as CodeMetaData;
 
                 let propActualSchema = propSchema;
-
+                const isRef = isReferenceObject(propSchema);
                 if (isReferenceObject(propSchema) && ctx?.resolver) {
                     propActualSchema = ctx.resolver.getSchemaByRef(propSchema.$ref);
                     if (!propActualSchema) {
@@ -266,11 +266,23 @@ export function getZodSchema({ schema, ctx, meta: inheritedMeta, options }: Conv
                     }
                 }
 
-                const propCode =
-                    getZodSchema({ schema: propSchema, ctx, meta: propMetadata, options }) +
-                    getZodChain({ schema: propActualSchema as SchemaObject, meta: propMetadata, options });
+                if (isRef) {
+                    const segments = propSchema.$ref.split("/");
+                    const n = segments[segments.length - 1]!;
+                    const propCode = getZodSchema({ schema: propSchema, ctx, meta: propMetadata, options });
+                    if (ctx) {
+                        ctx.zodSchemaByName[n] =
+                            getZodSchema({ schema: propActualSchema, ctx, meta: propMetadata, options }) +
+                            getZodChain({ schema: propActualSchema as SchemaObject, meta: propMetadata, options });
+                    }
+                    return [prop, propCode.toString()];
+                } else {
+                    const propCode =
+                        getZodSchema({ schema: propSchema, ctx, meta: propMetadata, options }) +
+                        getZodChain({ schema: propActualSchema as SchemaObject, meta: propMetadata, options });
 
-                return [prop, propCode.toString()];
+                    return [prop, propCode.toString()];
+                }
             });
 
             properties =
