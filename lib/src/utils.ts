@@ -65,10 +65,11 @@ type SingleType = Exclude<SchemaObject["type"], any[] | undefined>;
 export const isPrimitiveType = (type: SingleType): type is PrimitiveType => primitiveTypeList.includes(type as any);
 
 const primitiveTypeList = ["string", "number", "integer", "boolean", "null"] as const;
-export type PrimitiveType = typeof primitiveTypeList[number];
+export type PrimitiveType = (typeof primitiveTypeList)[number];
 
 export const escapeControlCharacters = (str: string): string => {
     return str
+        .replace(/\//g, "\\/") // 转义斜杠
         .replace(/\t/g, "\\t") // U+0009
         .replace(/\n/g, "\\n") // U+000A
         .replace(/\r/g, "\\r") // U+000D
@@ -82,7 +83,8 @@ export const escapeControlCharacters = (str: string): string => {
         });
 };
 
-export const toBoolean = (value: undefined | string | boolean, defaultValue: boolean) => match(value)
-    .with(P.string.regex(/^false$/i), false, () => false)
-    .with(P.string.regex(/^true$/i), true, () => true)
-    .otherwise(() => defaultValue);
+export const toBoolean = (value: undefined | string | boolean, defaultValue: boolean) =>
+    match(value)
+        .with(P.string.regex(/^false$/i), false, () => false)
+        .with(P.string.regex(/^true$/i), true, () => true)
+        .otherwise(() => defaultValue);

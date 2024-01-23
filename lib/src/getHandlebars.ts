@@ -24,7 +24,7 @@ export const getHandlebars = () => {
     instance.registerHelper("toCamelCase", function (input: string) {
         // Check if input string is already in camelCase
         if (/^[a-z][a-zA-Z0-9]*$/.test(input)) {
-            return input
+            return input;
         }
 
         const words = input.split(/[\s_-]/);
@@ -37,6 +37,25 @@ export const getHandlebars = () => {
                 return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
             })
             .join("");
+    });
+
+    instance.registerHelper("capitalize", function (str) {
+        if (str && typeof str === "string") {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+        return str;
+    });
+
+    instance.registerHelper("startsWithUnderscore", function (str) {
+        return str.startsWith("_");
+    });
+
+    instance.registerHelper("isUndefined", function (str) {
+        return str === "undefined";
+    });
+
+    instance.registerHelper("or", function (a, b) {
+        return a || b;
     });
 
     return instance;
